@@ -15,11 +15,13 @@ import (
 )
 
 var (
-	db     string
-	client *mongo.Client
+	db         string
+	client     *mongo.Client
+	collection *mongo.Collection
+	ctx        context.Context
 )
 
-type mapping struct {
+type Mapping struct {
 	createDate time.Time
 	key        string
 	redirect   string
@@ -27,17 +29,19 @@ type mapping struct {
 }
 
 func main() {
+	initializeConfig()
+	addr := initializeServer()
+	log.Printf("Leafylink listening on port %s", addr)
+
+	client = initializeDb()
+	initializeService(addr)
+}
+
+func initializeConfig() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	addr := initializeServer()
-
-	log.Printf("Leafylink listening on port %s", addr)
-
-	client = initializeDb()
-
-	initializeService(addr)
 }
 
 func initializeServer() string {
@@ -68,6 +72,9 @@ func initializeDb() *mongo.Client {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	collection = client.Database(db).Collection("mappings")
+
 	return client
 }
 
@@ -77,6 +84,7 @@ func initializeService(addr string) {
 
 	// Handlers
 	myRouter.HandleFunc("/", homePage)
+	myRouter.HandleFunc("/testInsert", testInsert)
 
 	// Initialize listen and serve
 	if err := http.ListenAndServe(addr, myRouter); err != nil {
@@ -95,4 +103,25 @@ func determineListenAddress() (string, error) {
 func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, World!  Leafylink here.\n")
 	log.Println("Home page served")
+}
+
+func testInsert(w http.ResponseWriter, r *http.Request) {
+	// Test mapping insertion
+	testMapping := Mapping{
+		createDate: time.Now(),
+		key:        "testKey",
+		redirect:   "https://www.mongodb.com/",
+		useCount:   0,
+	}
+
+	log.Printf("\ncreateDate: %s\nkey: %s\nredirect: %s\nusecount: %v\n", testMapping.createDate, testMapping.key, testMapping.redirect, testMapping.useCount)
+
+	insertResult, err := collection.InsertOne(ctx, testMapping)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%+v\n", testMapping)
+	log.Printf("Inserted a single document: %s\n", insertResult.InsertedID)
+	fmt.Fprintf(w, "Inserted a single document: %s\n", insertResult.InsertedID)
 }
