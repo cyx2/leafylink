@@ -16,4 +16,5 @@
 # vendor/
 
 # Environment variables
-.env
+*.env
+*.yaml
