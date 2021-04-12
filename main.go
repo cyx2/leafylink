@@ -22,10 +22,15 @@ func main() {
 
 	// Page handling
 	myRouter.HandleFunc("/", homePage)
+
+	// Initialize listen and serve
+	if err := http.ListenAndServe(addr, myRouter); err != nil {
+		panic(err)
+	}
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, World!\n")
+	fmt.Fprintf(w, "Hello, World!  Leafylink here.\n")
 	log.Println("Someone hit the home page")
 }
 
