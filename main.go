@@ -41,6 +41,7 @@ func initializeConfig() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	log.Printf("Loaded the %s config set", os.Getenv("ENV"))
 }
 
 func initializeServer() string {
@@ -61,6 +62,7 @@ func initializeDb() {
 	default:
 		db = "leafylink_local"
 	}
+	log.Printf("Writing to the %s db", db)
 
 	cxnParams := "/?retryWrites=true&w=majority"
 	dbCxnString := "mongodb+srv://" + os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@" + os.Getenv("DB_URL") + "/" + db + cxnParams
