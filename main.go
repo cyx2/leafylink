@@ -22,10 +22,10 @@ var (
 )
 
 type Mapping struct {
-	createDate time.Time
-	key        string
-	redirect   string
-	useCount   int
+	CreateDate time.Time
+	Key        string
+	Redirect   string
+	UseCount   int
 }
 
 func main() {
@@ -108,13 +108,13 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 func testInsert(w http.ResponseWriter, r *http.Request) {
 	// Test mapping insertion
 	testMapping := Mapping{
-		createDate: time.Now(),
-		key:        "testKey",
-		redirect:   "https://www.mongodb.com/",
-		useCount:   0,
+		CreateDate: time.Now(),
+		Key:        "testKey",
+		Redirect:   "https://www.mongodb.com/",
+		UseCount:   0,
 	}
 
-	log.Printf("\ncreateDate: %s\nkey: %s\nredirect: %s\nusecount: %v\n", testMapping.createDate, testMapping.key, testMapping.redirect, testMapping.useCount)
+	log.Printf("\ncreateDate: %s\nkey: %s\nredirect: %s\nusecount: %v\n", testMapping.CreateDate, testMapping.Key, testMapping.Redirect, testMapping.UseCount)
 
 	insertResult, err := collection.InsertOne(ctx, testMapping)
 	if err != nil {
