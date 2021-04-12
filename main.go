@@ -16,7 +16,6 @@ import (
 
 var (
 	db         string
-	client     *mongo.Client
 	collection *mongo.Collection
 	ctx        context.Context
 )
@@ -33,7 +32,7 @@ func main() {
 	addr := initializeServer()
 	log.Printf("Leafylink listening on port %s", addr)
 
-	client = initializeDb()
+	initializeDb()
 	initializeService(addr)
 }
 
@@ -53,7 +52,7 @@ func initializeServer() string {
 	return addr
 }
 
-func initializeDb() *mongo.Client {
+func initializeDb() {
 	switch os.Getenv("ENV") {
 	case "PROD":
 		db = "leafylink_prod"
@@ -74,8 +73,6 @@ func initializeDb() *mongo.Client {
 	}
 
 	collection = client.Database(db).Collection("mappings")
-
-	return client
 }
 
 func initializeService(addr string) {
@@ -114,14 +111,11 @@ func testInsert(w http.ResponseWriter, r *http.Request) {
 		UseCount:   0,
 	}
 
-	log.Printf("\ncreateDate: %s\nkey: %s\nredirect: %s\nusecount: %v\n", testMapping.CreateDate, testMapping.Key, testMapping.Redirect, testMapping.UseCount)
-
 	insertResult, err := collection.InsertOne(ctx, testMapping)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%+v\n", testMapping)
-	log.Printf("Inserted a single document: %s\n", insertResult.InsertedID)
-	fmt.Fprintf(w, "Inserted a single document: %s\n", insertResult.InsertedID)
+	log.Printf("\n========\nDocument Inserted:\nid: %s\ncreateDate: %s\nkey: %s\nredirect: %s\nusecount: %v\n========\n",
+		insertResult.InsertedID, testMapping.CreateDate, testMapping.Key, testMapping.Redirect, testMapping.UseCount)
 }
