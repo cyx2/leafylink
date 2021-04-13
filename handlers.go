@@ -2,15 +2,42 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
 func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, World!  Leafylink here.\n")
+	type Response struct {
+		Success  bool
+		LeafyUrl string
+		LongUrl  string
+	}
+
 	log.Println("Home page served")
+
+	if r.Method != http.MethodPost {
+		tmpl.Execute(w, nil)
+		return
+	}
+
+	newMapping := Mapping{
+		CreateDate: time.Now(),
+		Key:        "testKey",
+		Redirect:   r.FormValue("longUrl"),
+		UseCount:   0,
+	}
+
+	mappingResponse := Response{
+		Success:  true,
+		LeafyUrl: os.Getenv("APP_URL") + "/" + "testLeafyURL",
+		LongUrl:  r.FormValue("longUrl"),
+	}
+
+	insertMapping(newMapping)
+	w.WriteHeader(http.StatusCreated)
+	tmpl.Execute(w, mappingResponse)
 }
 
 func testInsert(w http.ResponseWriter, r *http.Request) {
@@ -22,13 +49,7 @@ func testInsert(w http.ResponseWriter, r *http.Request) {
 		UseCount:   0,
 	}
 
-	insertResult, err := collection.InsertOne(ctx, testMapping)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("\n========\nDocument Inserted:\nid: %s\ncreateDate: %s\nkey: %s\nredirect: %s\nusecount: %v\n========\n",
-		insertResult.InsertedID, testMapping.CreateDate, testMapping.Key, testMapping.Redirect, testMapping.UseCount)
+	insertMapping(testMapping)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(testMapping)

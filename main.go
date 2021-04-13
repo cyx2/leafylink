@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html/template"
 	"log"
 	"time"
 
@@ -12,6 +13,7 @@ var (
 	db         string
 	collection *mongo.Collection
 	ctx        context.Context
+	tmpl       = template.Must(template.ParseFiles("newMapping.html"))
 )
 
 type Mapping struct {
