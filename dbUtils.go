@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func insertMapping(newMap Mapping) {
@@ -31,4 +33,21 @@ func retrieveMappingByKey(lookupKey string) (mapping Mapping) {
 	}
 
 	return result
+}
+
+func incrementUseCount(lookupKey string) {
+	result, err := collection.UpdateOne(
+		ctx,
+		bson.M{"key": lookupKey},
+		bson.D{
+			{"$inc", bson.D{{"usecount", 1}}},
+		},
+		options.Update().SetUpsert(true),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Updated %v Documents!\n", result.ModifiedCount)
 }

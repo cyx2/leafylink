@@ -32,3 +32,24 @@ func TestRetrieveMappingKey(t *testing.T) {
 		t.Errorf("Returned key does not match expected key, got %s, expected %s", returnedMapping.Key, expKey)
 	}
 }
+
+func TestIncrementUseCount(t *testing.T) {
+	initializeConfig()
+	addr := initializeServer()
+	log.Printf("Leafylink listening on port %s", addr)
+
+	initializeDb()
+
+	key := "15c8bc"
+
+	currentUseCount := retrieveMappingByKey(key).UseCount
+	expUseCount := retrieveMappingByKey(key).UseCount + 1
+
+	incrementUseCount(key)
+
+	newUseCount := retrieveMappingByKey(key).UseCount
+
+	if newUseCount != expUseCount {
+		t.Errorf("Use count for %s was not incremented properly.  Original was %v, got %v, expected %v", key, currentUseCount, newUseCount, expUseCount)
+	}
+}
