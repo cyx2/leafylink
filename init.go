@@ -17,9 +17,9 @@ import (
 func initializeConfig() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("No .env file found in repo, deferring to system config")
+		log.Println("INIT: No .env file found in repo, deferring to system config")
 	}
-	log.Printf("Loaded the %s config set", os.Getenv("ENV"))
+	log.Printf("INIT: Loaded the %s config set", os.Getenv("ENV"))
 }
 
 func initializeServer() string {
@@ -28,6 +28,9 @@ func initializeServer() string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Printf("INIT: Leafylink listening on port %s", addr)
+
 	return addr
 }
 
@@ -48,7 +51,7 @@ func initializeDb() {
 	default:
 		db = "leafylink_local"
 	}
-	log.Printf("Writing to the %s db", db)
+	log.Printf("INIT: Writing to the %s db", db)
 
 	cxnParams := "/?retryWrites=true&w=majority"
 	dbCxnString := "mongodb+srv://" + os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@" + os.Getenv("DB_URL") + "/" + db + cxnParams
@@ -68,9 +71,10 @@ func initializeHandlers(addr string) {
 	myRouter := mux.NewRouter().StrictSlash(true)
 
 	// Handlers
-	myRouter.HandleFunc("/", homePage)
-	myRouter.HandleFunc("/testInsert", testInsert)
-	myRouter.HandleFunc("/retrieve/{lookupKey}", retrieveByKey)
+	myRouter.HandleFunc("/", homeHandler)
+	myRouter.HandleFunc("/test/insert", testInsertHandler)
+	myRouter.HandleFunc("/retrieve/{lookupKey}", retrieveByKeyHandler)
+	myRouter.HandleFunc("/{lookupKey}", redirectHandler)
 
 	// Initialize listen and serve
 	if err := http.ListenAndServe(addr, myRouter); err != nil {

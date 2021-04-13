@@ -13,7 +13,7 @@ func insertMapping(newMap Mapping) {
 		log.Fatal(err)
 	}
 
-	log.Printf("\n========\nDocument Inserted:\nid: %s\ncreateDate: %s\nkey: %s\nredirect: %s\nusecount: %v\n========\n",
+	log.Printf("\n========\nDB:\nDocument Inserted:\nid: %s\ncreateDate: %s\nkey: %s\nredirect: %s\nusecount: %v\n========\n",
 		insertResult.InsertedID, newMap.CreateDate, newMap.Key, newMap.Redirect, newMap.UseCount)
 }
 
@@ -24,7 +24,7 @@ func retrieveMappingByKey(lookupKey string) (mapping Mapping) {
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			log.Printf("Tried to search for key %s but found no results", lookupKey)
+			log.Printf("DB: Tried to search for key %s but found no results", lookupKey)
 			return
 		}
 		log.Fatal(err)

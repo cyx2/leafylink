@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func homePage(w http.ResponseWriter, r *http.Request) {
+func homeHandler(w http.ResponseWriter, r *http.Request) {
 	type Response struct {
 		Success  bool
 		LeafyUrl string
@@ -18,7 +18,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 		AppUrl   string
 	}
 
-	log.Println("Home page served")
+	log.Println("WEB: Home page served")
 
 	if r.Method != http.MethodPost {
 		tmpl.Execute(w, nil)
@@ -46,7 +46,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, mappingResponse)
 }
 
-func testInsert(w http.ResponseWriter, r *http.Request) {
+func testInsertHandler(w http.ResponseWriter, r *http.Request) {
 	testLongUrl := "https://www.mongodb.com/"
 
 	// Test mapping insertion
@@ -63,11 +63,18 @@ func testInsert(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(testMapping)
 }
 
-func retrieveByKey(w http.ResponseWriter, r *http.Request) {
+func retrieveByKeyHandler(w http.ResponseWriter, r *http.Request) {
 	lookupKey := mux.Vars(r)["lookupKey"]
-
 	retrievedMapping := retrieveMappingByKey(lookupKey)
 
 	w.WriteHeader(http.StatusFound)
 	json.NewEncoder(w).Encode(retrievedMapping)
+}
+
+func redirectHandler(w http.ResponseWriter, r *http.Request) {
+	lookupKey := mux.Vars(r)["lookupKey"]
+	retrievedMapping := retrieveMappingByKey(lookupKey)
+
+	log.Printf("WEB: Successfully served a redirect from %s to %s", retrievedMapping.Key, retrievedMapping.Redirect)
+	http.Redirect(w, r, retrievedMapping.Redirect, http.StatusTemporaryRedirect)
 }

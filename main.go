@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"html/template"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -26,8 +25,6 @@ type Mapping struct {
 func main() {
 	initializeConfig()
 	addr := initializeServer()
-	log.Printf("Leafylink listening on port %s", addr)
-
 	initializeDb()
 	initializeHandlers(addr)
 }

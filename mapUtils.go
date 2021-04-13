@@ -11,3 +11,6 @@ func urlHash(longUrl string) string {
 	io.WriteString(h, longUrl)
 	return hex.EncodeToString(h.Sum(nil))[:6]
 }
+
+// TODO: De-Dup Keys
+// TODO: De-Dup longURLs
