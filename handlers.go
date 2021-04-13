@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -36,6 +35,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	checkMapping := retrieveMappingByKey(newMapping.Key)
 
 	mappingResponse := Response{
+		Success:  true,
 		LeafyUrl: os.Getenv("APP_URL") + "/" + newMapping.Key,
 		LongUrl:  r.FormValue("longUrl"),
 		AppUrl:   os.Getenv("APP_URL"),
@@ -43,10 +43,13 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch checkMapping.Redirect {
 	case newMapping.Redirect:
+		mappingResponse.Success = true
+
 		log.Printf("WEB: Attempted creation for %s but a matching mapping was found with key %s",
 			newMapping.Redirect, newMapping.Key)
-		// Existing mapping exists, return the existing entry
-		fmt.Fprintf(w, "Looks like this Leafylink exists at %s", checkMapping.Redirect)
+
+		w.WriteHeader(http.StatusOK)
+		tmpl.Execute(w, mappingResponse)
 	case "":
 		// No duplicate found, proceed with creation
 		mappingResponse.Success = true
