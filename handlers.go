@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -32,18 +33,47 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		UseCount:   0,
 	}
 
-	// TODO: Implement de-dupe
+	switch retrieveMappingByKey(newMapping.Key).Redirect {
+	case newMapping.Redirect:
+		log.Printf("WEB: Attempted creation for %s but a matching mapping was found with key %s",
+			newMapping.Redirect, newMapping.Key)
+		// Existing mapping exists, return the existing entry
+		fmt.Fprintf(w, "Looks like this Leafylink exists at %s",
+			os.Getenv("APP_URL")+"/"+retrieveMappingByKey(newMapping.Key).Key)
+	case "":
+		// No duplicate found, proceed with creation
+		mappingResponse := Response{
+			Success:  true,
+			LeafyUrl: os.Getenv("APP_URL") + "/" + newMapping.Key,
+			LongUrl:  r.FormValue("longUrl"),
+			AppUrl:   os.Getenv("APP_URL"),
+		}
 
-	mappingResponse := Response{
-		Success:  true,
-		LeafyUrl: os.Getenv("APP_URL") + "/" + newMapping.Key,
-		LongUrl:  r.FormValue("longUrl"),
-		AppUrl:   os.Getenv("APP_URL"),
+		insertMapping(newMapping)
+		w.WriteHeader(http.StatusCreated)
+		tmpl.Execute(w, mappingResponse)
+	default:
+		// Existing mapping against the key, generate a new hash key
+		var hashCounter int
+		for retrieveMappingByKey(newMapping.Key).Redirect != "" {
+			newMapping.Key = urlHash(newMapping.Key)
+			hashCounter++
+		}
+
+		log.Printf("WEB: Namespace collision occurred with longUrl %s, key %s, rehashed via %v iterations", newMapping.Redirect, newMapping.Key, hashCounter)
+
+		mappingResponse := Response{
+			Success:  true,
+			LeafyUrl: os.Getenv("APP_URL") + "/" + newMapping.Key,
+			LongUrl:  r.FormValue("longUrl"),
+			AppUrl:   os.Getenv("APP_URL"),
+		}
+
+		insertMapping(newMapping)
+		w.WriteHeader(http.StatusCreated)
+		tmpl.Execute(w, mappingResponse)
 	}
 
-	insertMapping(newMapping)
-	w.WriteHeader(http.StatusCreated)
-	tmpl.Execute(w, mappingResponse)
 }
 
 func testInsertHandler(w http.ResponseWriter, r *http.Request) {
