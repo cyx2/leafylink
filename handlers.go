@@ -75,6 +75,11 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	lookupKey := mux.Vars(r)["lookupKey"]
 	retrievedMapping := retrieveMappingByKey(lookupKey)
 
-	log.Printf("WEB: Successfully served a redirect from %s to %s", retrievedMapping.Key, retrievedMapping.Redirect)
+	if retrievedMapping.Redirect == "" {
+		log.Printf("WEB: Failed a redirect for key %s because a mapping was not found", lookupKey)
+	} else {
+		log.Printf("WEB: Successfully served a redirect from %s to %s", retrievedMapping.Key, retrievedMapping.Redirect)
+	}
+
 	http.Redirect(w, r, retrievedMapping.Redirect, http.StatusTemporaryRedirect)
 }
