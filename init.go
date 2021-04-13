@@ -15,15 +15,20 @@ import (
 )
 
 func initializeConfig() {
+	// Utilize godotenv to load config from .env file on local machine
 	err := godotenv.Load()
 	if err != nil {
+		// Heroku maintains config once deployed, so deferring to this config in lieu
+		// of a .env file
 		log.Println("INIT: No .env file found in repo, deferring to system config")
 	}
 	log.Printf("INIT: Loaded the %s config set", os.Getenv("ENV"))
 }
 
 func initializeServer() string {
-	// Determine web port
+	// Determine web port based on config
+	// When local, this is specified in .env
+	// When deployed, this is specified by Heroku config
 	addr, err := determineListenAddress()
 	if err != nil {
 		log.Fatal(err)
@@ -31,6 +36,7 @@ func initializeServer() string {
 
 	log.Printf("INIT: Leafylink listening on port %s", addr)
 
+	// Returns the listen address for http ListenAndServe
 	return addr
 }
 
@@ -43,6 +49,9 @@ func determineListenAddress() (string, error) {
 }
 
 func initializeDb() {
+	// Determine the Atlas DB based on the ENV config variable
+	// Leafylink uses a single cluster for all environments, but a different
+	// db depending on the ENV configuration
 	switch os.Getenv("ENV") {
 	case "PROD":
 		db = "leafylink_prod"
@@ -53,6 +62,7 @@ func initializeDb() {
 	}
 	log.Printf("INIT: Writing to the %s db", db)
 
+	// MongoDB Atlas connection params and string computed based on the environment
 	cxnParams := "/?retryWrites=true&w=majority"
 	dbCxnString := "mongodb+srv://" + os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@" + os.Getenv("DB_URL") + "/" + db + cxnParams
 
@@ -63,21 +73,22 @@ func initializeDb() {
 		log.Fatal(err)
 	}
 
+	// Set the global collection variable for all dbs
 	collection = client.Database(db).Collection("mappings")
 }
 
 func initializeHandlers(addr string) {
-	// Initialize Gorilla mux
+	// Initialize http mux (Gorilla)
 	myRouter := mux.NewRouter().StrictSlash(true)
 
-	// Handlers
+	// Specify handlers for URL variants
 	myRouter.HandleFunc("/", homeHandler)
 	myRouter.HandleFunc("/tools/testInsert", testInsertHandler)
 	myRouter.HandleFunc("/tools/retrieve/{lookupKey}", retrieveByKeyHandler)
 	myRouter.HandleFunc("/api/create", apiCreateHandler).Methods("POST")
 	myRouter.HandleFunc("/{lookupKey}", redirectHandler)
 
-	// Initialize listen and serve
+	// Start HTTP server
 	if err := http.ListenAndServe(addr, myRouter); err != nil {
 		panic(err)
 	}

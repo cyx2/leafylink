@@ -12,8 +12,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Home handler manages the single page web UI for Leafylink
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	// Response defines the data structure for the web UI
 	type Response struct {
+		// Success is used to maintain application state
 		Success  bool
 		LeafyUrl string
 		LongUrl  string
@@ -27,7 +30,10 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Mapping key is computed based on the first six characters of the longUrl MD5 hash
 	newMappingKey := urlHash(r.FormValue("longUrl"))
+
+	// Mapping data structure is assembled prior to being loaded into Atlas
 	newMapping := Mapping{
 		CreateDate: time.Now(),
 		Key:        newMappingKey,
@@ -38,6 +44,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 	checkMapping := retrieveMappingByKey(newMapping.Key)
 
+	// Instantiate a Response specific to the event being handled
 	mappingResponse := Response{
 		Success:  true,
 		LeafyUrl: newMapping.LeafyUrl,
@@ -45,29 +52,42 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		AppUrl:   os.Getenv("APP_URL"),
 	}
 
+	// Switch statement to determine if there are duplicates
 	switch checkMapping.Redirect {
+
+	// Case 1: Identical mapping already exists
 	case newMapping.Redirect:
 		mappingResponse.Success = true
 
 		log.Printf("WEB: Attempted creation for %s but a matching mapping was found with key %s",
 			newMapping.Redirect, newMapping.Key)
 
+		// Identical mapping is returned to the user
 		w.WriteHeader(http.StatusOK)
 		tmpl.Execute(w, mappingResponse)
+
+	// Case 2: No duplicate is found
 	case "":
-		// No duplicate found, proceed with creation
 		mappingResponse.Success = true
 
+		// Mapping is inserted into the database
 		insertMapping(newMapping)
 		w.WriteHeader(http.StatusCreated)
 		tmpl.Execute(w, mappingResponse)
+
+	// Case 3: Catch all, but mostly to catch if a Mapping exists with the same key, but different Redirect
+	// This can occur because the first 6 chars of the MD5 hash of two different longUrls could be the same
 	default:
-		// Existing mapping against the key, generate a new hash key
 		var (
 			hashCounter     int
 			originalHashKey string
 		)
 
+		mappingResponse.Success = true
+
+		// A new hash is computed by hashing the existing hash
+		// This repeats until a new unique hash is computed
+		// Once this is done, the newly computed hash replaces the original key
 		originalHashKey = newMapping.Key
 		for retrieveMappingByKey(newMapping.Key).Redirect != "" {
 			newMapping.Key = urlHash(newMapping.Key)
@@ -77,8 +97,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("WEB: Namespace collision occurred:\nOriginal: key %s / longUrl %s\nRehashed: key %s / longUrl %s / hash iterations %v",
 			originalHashKey, newMapping.Redirect, newMapping.Key, newMapping.Redirect, hashCounter)
 
-		mappingResponse.Success = true
-
+		// Mapping is inserted into the database
 		insertMapping(newMapping)
 		w.WriteHeader(http.StatusCreated)
 		tmpl.Execute(w, mappingResponse)
@@ -86,6 +105,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// TestInsert Handler inserts a static document
 func testInsertHandler(w http.ResponseWriter, r *http.Request) {
 	testLongUrl := "https://www.mongodb.com/"
 
@@ -105,6 +125,7 @@ func testInsertHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(testMapping)
 }
 
+// RetrieveByKey Handler retrieves documents based on the Mapping Key (lookupKey)
 func retrieveByKeyHandler(w http.ResponseWriter, r *http.Request) {
 	lookupKey := mux.Vars(r)["lookupKey"]
 	retrievedMapping := retrieveMappingByKey(lookupKey)
@@ -114,6 +135,7 @@ func retrieveByKeyHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(retrievedMapping)
 }
 
+// Redirect Handler redirects users based on the Mapping Key (lookupKey) specified in the URL
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	lookupKey := mux.Vars(r)["lookupKey"]
 	retrievedMapping := retrieveMappingByKey(lookupKey)
@@ -128,6 +150,12 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, retrievedMapping.Redirect, http.StatusFound)
 }
 
+// ApiCreate Handler programmatically inserts new Mappings via REST API
+// Structure is generally analogous to homeHandler
+// Structure for this API is:
+// {
+//     "LongURL": "https://www.accel.com/"
+// }
 func apiCreateHandler(w http.ResponseWriter, r *http.Request) {
 	type CreateApiInput struct {
 		LongUrl string
@@ -139,9 +167,11 @@ func apiCreateHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotAcceptable)
 	}
 
+	// Unmarshal POST Body into newApiInput
 	var newApiInput CreateApiInput
 	json.Unmarshal(reqBody, &newApiInput)
 
+	// Mapping data structure is assembled prior to being loaded into Atlas
 	newMappingKey := urlHash(newApiInput.LongUrl)
 	newMapping := Mapping{
 		CreateDate: time.Now(),
@@ -153,7 +183,11 @@ func apiCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	checkMapping := retrieveMappingByKey(newMapping.Key)
 
+	// Switch statement to determine if there are duplicates
+
 	switch checkMapping.Redirect {
+
+	// Case 1: Identical mapping already exists
 	case newMapping.Redirect:
 		log.Printf("API: Attempted creation for %s but a matching mapping was found with key %s",
 			newMapping.Redirect, newMapping.Key)
@@ -161,20 +195,25 @@ func apiCreateHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(checkMapping)
+
+	// Case 2: No duplicate is found
 	case "":
-		// No duplicate found, proceed with creation
 		insertMapping(newMapping)
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(newMapping)
+
+		// Case 3: Catch all, but mostly to catch if a Mapping exists with the same key, but different Redirect
 	default:
-		// Existing mapping against the key, generate a new hash key
 		var (
 			hashCounter     int
 			originalHashKey string
 		)
 
+		// A new hash is computed by hashing the existing hash
+		// This repeats until a new unique hash is computed
+		// Once this is done, the newly computed hash replaces the original key
 		originalHashKey = newMapping.Key
 		for retrieveMappingByKey(newMapping.Key).Redirect != "" {
 			newMapping.Key = urlHash(newMapping.Key)
