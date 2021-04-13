@@ -79,6 +79,7 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("WEB: Failed a redirect for key %s because a mapping was not found", lookupKey)
 	} else {
 		log.Printf("WEB: Successfully served a redirect from %s to %s", retrievedMapping.Key, retrievedMapping.Redirect)
+		incrementUseCount(lookupKey)
 	}
 
 	http.Redirect(w, r, retrievedMapping.Redirect, http.StatusTemporaryRedirect)

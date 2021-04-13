@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -36,7 +35,7 @@ func retrieveMappingByKey(lookupKey string) (mapping Mapping) {
 }
 
 func incrementUseCount(lookupKey string) {
-	result, err := collection.UpdateOne(
+	_, err := collection.UpdateOne(
 		ctx,
 		bson.M{"key": lookupKey},
 		bson.D{
@@ -49,5 +48,5 @@ func incrementUseCount(lookupKey string) {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Updated %v Documents!\n", result.ModifiedCount)
+	log.Printf("DB: Incremented usecount for key %s", lookupKey)
 }
