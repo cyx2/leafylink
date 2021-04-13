@@ -230,3 +230,8 @@ func apiCreateHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(newMapping)
 	}
 }
+
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "https://golang.org/favicon.ico", http.StatusPermanentRedirect)
+	log.Println("WEB: Favicon served")
+}

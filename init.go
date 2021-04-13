@@ -83,6 +83,7 @@ func initializeHandlers(addr string) {
 
 	// Specify handlers for URL variants
 	myRouter.HandleFunc("/", homeHandler)
+	myRouter.HandleFunc("/favicon.ico", faviconHandler)
 	myRouter.HandleFunc("/tools/testInsert", testInsertHandler)
 	myRouter.HandleFunc("/tools/retrieve/{lookupKey}", retrieveByKeyHandler)
 	myRouter.HandleFunc("/api/create", apiCreateHandler).Methods("POST")
