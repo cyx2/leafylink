@@ -72,8 +72,9 @@ func initializeHandlers(addr string) {
 
 	// Handlers
 	myRouter.HandleFunc("/", homeHandler)
-	myRouter.HandleFunc("/test/insert", testInsertHandler)
-	myRouter.HandleFunc("/retrieve/{lookupKey}", retrieveByKeyHandler)
+	myRouter.HandleFunc("/tools/testInsert", testInsertHandler)
+	myRouter.HandleFunc("/tools/retrieve/{lookupKey}", retrieveByKeyHandler)
+	myRouter.HandleFunc("/api/create", apiCreateHandler).Methods("POST")
 	myRouter.HandleFunc("/{lookupKey}", redirectHandler)
 
 	// Initialize listen and serve

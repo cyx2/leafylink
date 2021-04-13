@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -103,6 +105,7 @@ func retrieveByKeyHandler(w http.ResponseWriter, r *http.Request) {
 	lookupKey := mux.Vars(r)["lookupKey"]
 	retrievedMapping := retrieveMappingByKey(lookupKey)
 
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusFound)
 	json.NewEncoder(w).Encode(retrievedMapping)
 }
@@ -118,5 +121,67 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 		incrementUseCount(lookupKey)
 	}
 
-	http.Redirect(w, r, retrievedMapping.Redirect, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, retrievedMapping.Redirect, http.StatusFound)
+}
+
+func apiCreateHandler(w http.ResponseWriter, r *http.Request) {
+	type CreateApiInput struct {
+		LongUrl string
+	}
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "Request is does not conform to the expected structure")
+		w.WriteHeader(http.StatusNotAcceptable)
+	}
+
+	var newApiInput CreateApiInput
+	json.Unmarshal(reqBody, &newApiInput)
+
+	newMapping := Mapping{
+		CreateDate: time.Now(),
+		Key:        urlHash(newApiInput.LongUrl),
+		Redirect:   newApiInput.LongUrl,
+		UseCount:   0,
+	}
+
+	checkMapping := retrieveMappingByKey(newMapping.Key)
+
+	switch checkMapping.Redirect {
+	case newMapping.Redirect:
+		log.Printf("API: Attempted creation for %s but a matching mapping was found with key %s",
+			newMapping.Redirect, newMapping.Key)
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(newMapping)
+	case "":
+		// No duplicate found, proceed with creation
+		insertMapping(newMapping)
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(newMapping)
+	default:
+		// Existing mapping against the key, generate a new hash key
+		var (
+			hashCounter     int
+			originalHashKey string
+		)
+
+		originalHashKey = newMapping.Key
+		for retrieveMappingByKey(newMapping.Key).Redirect != "" {
+			newMapping.Key = urlHash(newMapping.Key)
+			hashCounter++
+		}
+
+		log.Printf("API: Namespace collision occurred:\nOriginal: key %s / longUrl %s\nRehashed: key %s / longUrl %s / hash iterations %v",
+			originalHashKey, newMapping.Redirect, newMapping.Key, newMapping.Redirect, hashCounter)
+
+		insertMapping(newMapping)
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(newMapping)
+	}
 }
