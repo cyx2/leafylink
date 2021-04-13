@@ -1,15 +1,34 @@
-{{if .Success}}
-    <h1>Leafylink Created!</h1>
-    <div>Leafy URL: {{.LeafyUrl}}</div>
-    <div>Long URL: {{.LongUrl}}</div>
-    <a href="{{.AppUrl}}">
-        <button>Another!!</button>
-     </a>
-{{else}}
-    <h1>Heya, Welcome to Leafylink</h1>
-    <form method="POST">
-        <label>Long URL:</label><br />
-        <input type="text" name="longUrl"><br />
-        <input type="submit">
-    </form>
-{{end}}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		
+        <title>Leafylink</title>
+        
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    </head>
+    <body>
+        <div class="container-fluid">
+            {{if .Success}}
+            <h1>Leafylink Created!</h1>
+            <div class="mb-3">Leafy URL: {{.LeafyUrl}}</div>
+            <div class="mb-3">Long URL: {{.LongUrl}}</div>
+            <a href="{{.AppUrl}}">
+                <button class="btn btn-primary">Another!!</button>
+            </a>
+        {{else}}
+            <h1>Heya, Welcome to Leafylink</h1>
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="longUrl" class="form-label">Long URL:</label>
+                    <input type="text" class="form-control" name="longUrl" placeholder="https://www.mongodb.com/cloud"><br />
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        {{end}}
+        </div>
+    </body>
+</html>
+
+
