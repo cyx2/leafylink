@@ -13,6 +13,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 		Success  bool
 		LeafyUrl string
 		LongUrl  string
+		AppUrl   string
 	}
 
 	log.Println("Home page served")
@@ -33,6 +34,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 		Success:  true,
 		LeafyUrl: os.Getenv("APP_URL") + "/" + "testLeafyURL",
 		LongUrl:  r.FormValue("longUrl"),
+		AppUrl:   os.Getenv("APP_URL"),
 	}
 
 	insertMapping(newMapping)
