@@ -25,14 +25,16 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 
 	newMapping := Mapping{
 		CreateDate: time.Now(),
-		Key:        "testKey",
+		Key:        urlHash(r.FormValue("longUrl")),
 		Redirect:   r.FormValue("longUrl"),
 		UseCount:   0,
 	}
 
+	// TODO: Implement de-dupe
+
 	mappingResponse := Response{
 		Success:  true,
-		LeafyUrl: os.Getenv("APP_URL") + "/" + "testLeafyURL",
+		LeafyUrl: os.Getenv("APP_URL") + "/" + newMapping.Key,
 		LongUrl:  r.FormValue("longUrl"),
 		AppUrl:   os.Getenv("APP_URL"),
 	}
@@ -43,11 +45,13 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func testInsert(w http.ResponseWriter, r *http.Request) {
+	testLongUrl := "https://www.mongodb.com/"
+
 	// Test mapping insertion
 	testMapping := Mapping{
 		CreateDate: time.Now(),
-		Key:        "testKey",
-		Redirect:   "https://www.mongodb.com/",
+		Key:        urlHash(testLongUrl),
+		Redirect:   testLongUrl,
 		UseCount:   0,
 	}
 
