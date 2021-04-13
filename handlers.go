@@ -54,13 +54,19 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		tmpl.Execute(w, mappingResponse)
 	default:
 		// Existing mapping against the key, generate a new hash key
-		var hashCounter int
+		var (
+			hashCounter     int
+			originalHashKey string
+		)
+
+		originalHashKey = newMapping.Key
 		for retrieveMappingByKey(newMapping.Key).Redirect != "" {
 			newMapping.Key = urlHash(newMapping.Key)
 			hashCounter++
 		}
 
-		log.Printf("WEB: Namespace collision occurred with longUrl %s, key %s, rehashed via %v iterations", newMapping.Redirect, newMapping.Key, hashCounter)
+		log.Printf("WEB: Namespace collision occurred:\nOriginal: key %s / longUrl %s\nRehashed: key %s / longUrl %s / hash iterations %v",
+			originalHashKey, newMapping.Redirect, newMapping.Key, newMapping.Redirect, hashCounter)
 
 		mappingResponse := Response{
 			Success:  true,
