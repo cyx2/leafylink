@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,4 +29,7 @@ func testInsert(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("\n========\nDocument Inserted:\nid: %s\ncreateDate: %s\nkey: %s\nredirect: %s\nusecount: %v\n========\n",
 		insertResult.InsertedID, testMapping.CreateDate, testMapping.Key, testMapping.Redirect, testMapping.UseCount)
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(testMapping)
 }
