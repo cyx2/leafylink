@@ -33,21 +33,23 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		UseCount:   0,
 	}
 
-	switch retrieveMappingByKey(newMapping.Key).Redirect {
+	checkMapping := retrieveMappingByKey(newMapping.Key)
+
+	mappingResponse := Response{
+		LeafyUrl: os.Getenv("APP_URL") + "/" + newMapping.Key,
+		LongUrl:  r.FormValue("longUrl"),
+		AppUrl:   os.Getenv("APP_URL"),
+	}
+
+	switch checkMapping.Redirect {
 	case newMapping.Redirect:
 		log.Printf("WEB: Attempted creation for %s but a matching mapping was found with key %s",
 			newMapping.Redirect, newMapping.Key)
 		// Existing mapping exists, return the existing entry
-		fmt.Fprintf(w, "Looks like this Leafylink exists at %s",
-			os.Getenv("APP_URL")+"/"+retrieveMappingByKey(newMapping.Key).Key)
+		fmt.Fprintf(w, "Looks like this Leafylink exists at %s", checkMapping.Redirect)
 	case "":
 		// No duplicate found, proceed with creation
-		mappingResponse := Response{
-			Success:  true,
-			LeafyUrl: os.Getenv("APP_URL") + "/" + newMapping.Key,
-			LongUrl:  r.FormValue("longUrl"),
-			AppUrl:   os.Getenv("APP_URL"),
-		}
+		mappingResponse.Success = true
 
 		insertMapping(newMapping)
 		w.WriteHeader(http.StatusCreated)
@@ -68,12 +70,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("WEB: Namespace collision occurred:\nOriginal: key %s / longUrl %s\nRehashed: key %s / longUrl %s / hash iterations %v",
 			originalHashKey, newMapping.Redirect, newMapping.Key, newMapping.Redirect, hashCounter)
 
-		mappingResponse := Response{
-			Success:  true,
-			LeafyUrl: os.Getenv("APP_URL") + "/" + newMapping.Key,
-			LongUrl:  r.FormValue("longUrl"),
-			AppUrl:   os.Getenv("APP_URL"),
-		}
+		mappingResponse.Success = true
 
 		insertMapping(newMapping)
 		w.WriteHeader(http.StatusCreated)
