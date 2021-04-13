@@ -27,10 +27,12 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	newMappingKey := urlHash(r.FormValue("longUrl"))
 	newMapping := Mapping{
 		CreateDate: time.Now(),
-		Key:        urlHash(r.FormValue("longUrl")),
+		Key:        newMappingKey,
 		Redirect:   r.FormValue("longUrl"),
+		LeafyUrl:   os.Getenv("APP_URL") + "/" + newMappingKey,
 		UseCount:   0,
 	}
 
@@ -38,7 +40,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 	mappingResponse := Response{
 		Success:  true,
-		LeafyUrl: os.Getenv("APP_URL") + "/" + newMapping.Key,
+		LeafyUrl: newMapping.LeafyUrl,
 		LongUrl:  r.FormValue("longUrl"),
 		AppUrl:   os.Getenv("APP_URL"),
 	}
@@ -88,10 +90,12 @@ func testInsertHandler(w http.ResponseWriter, r *http.Request) {
 	testLongUrl := "https://www.mongodb.com/"
 
 	// Test mapping insertion
+	testMappingKey := urlHash(testLongUrl)
 	testMapping := Mapping{
 		CreateDate: time.Now(),
-		Key:        urlHash(testLongUrl),
+		Key:        testMappingKey,
 		Redirect:   testLongUrl,
+		LeafyUrl:   os.Getenv("APP_URL") + "/" + testMappingKey,
 		UseCount:   0,
 	}
 
@@ -138,10 +142,12 @@ func apiCreateHandler(w http.ResponseWriter, r *http.Request) {
 	var newApiInput CreateApiInput
 	json.Unmarshal(reqBody, &newApiInput)
 
+	newMappingKey := urlHash(newApiInput.LongUrl)
 	newMapping := Mapping{
 		CreateDate: time.Now(),
-		Key:        urlHash(newApiInput.LongUrl),
+		Key:        newMappingKey,
 		Redirect:   newApiInput.LongUrl,
+		LeafyUrl:   os.Getenv("APP_URL") + "/" + newMappingKey,
 		UseCount:   0,
 	}
 

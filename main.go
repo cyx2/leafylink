@@ -19,6 +19,7 @@ type Mapping struct {
 	CreateDate time.Time
 	Key        string
 	Redirect   string
+	LeafyUrl   string
 	UseCount   int
 }
 
