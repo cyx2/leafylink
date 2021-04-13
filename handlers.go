@@ -154,7 +154,7 @@ func apiCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(newMapping)
+		json.NewEncoder(w).Encode(checkMapping)
 	case "":
 		// No duplicate found, proceed with creation
 		insertMapping(newMapping)
