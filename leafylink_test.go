@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"testing"
 )
 
@@ -12,5 +13,22 @@ func TestUrlHash(t *testing.T) {
 
 	if key != expKey {
 		t.Errorf("URL Hash does not match, got %s, expected %s", key, expKey)
+	}
+}
+
+func TestRetrieveMappingKey(t *testing.T) {
+	initializeConfig()
+	addr := initializeServer()
+	log.Printf("Leafylink listening on port %s", addr)
+
+	initializeDb()
+
+	key := "15c8bc"
+	expKey := key
+
+	returnedMapping := retrieveMappingByKey(key)
+
+	if returnedMapping.Key != expKey {
+		t.Errorf("Returned key does not match expected key, got %s, expected %s", returnedMapping.Key, expKey)
 	}
 }

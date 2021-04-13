@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -59,4 +61,13 @@ func testInsert(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(testMapping)
+}
+
+func retrieveByKey(w http.ResponseWriter, r *http.Request) {
+	lookupKey := mux.Vars(r)["lookupKey"]
+
+	retrievedMapping := retrieveMappingByKey(lookupKey)
+
+	w.WriteHeader(http.StatusFound)
+	json.NewEncoder(w).Encode(retrievedMapping)
 }

@@ -70,6 +70,7 @@ func initializeHandlers(addr string) {
 	// Handlers
 	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/testInsert", testInsert)
+	myRouter.HandleFunc("/retrieve/{lookupKey}", retrieveByKey)
 
 	// Initialize listen and serve
 	if err := http.ListenAndServe(addr, myRouter); err != nil {
