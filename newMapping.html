@@ -11,22 +11,29 @@
     <body>
         <div class="container-fluid">
             {{if .Success}}
-            <h1>Leafylink Created!</h1>
-            <div class="mb-3">Leafy URL: {{.LeafyUrl}}</div>
-            <div class="mb-3">Long URL: {{.LongUrl}}</div>
-            <a href="{{.AppUrl}}">
-                <button class="btn btn-primary">Another!!</button>
-            </a>
-        {{else}}
-            <h1>Heya, Welcome to Leafylink</h1>
-            <form method="POST">
-                <div class="mb-3">
-                    <label for="longUrl" class="form-label">Long URL:</label>
-                    <input type="text" class="form-control" name="longUrl" placeholder="https://www.google.com/"><br />
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
-        {{end}}
+                <h2>Leafylink Created!</h2>
+                <br>
+                <div class="mb-3">Leafy URL: {{.LeafyUrl}}</div>
+                <div class="mb-3">Long URL: {{.LongUrl}}</div>
+                <br>
+                <a href="{{.AppUrl}}">
+                    <button class="btn btn-primary">Make Another!</button>
+                </a>            
+            {{else}}
+                <h2>Heya, Welcome to Leafylink</h2>
+                <form method="POST">
+                    <div class="mb-3">
+                        <br>
+                        <label for="longUrl" class="form-label">New Leafylink</label>
+                        <input type="text" id="longUrl" class="form-control" name="longUrl" aria-describedby="longUrlHelpBlock" placeholder="https://www.google.com/">
+                        <div id="longUrlHelpBlock" class="form-text">
+                            Your Long URL must include http:// or https://  
+                        </div>
+                        <br>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>                             
+            {{end}}
         </div>
     </body>
 </html>
