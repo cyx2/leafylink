@@ -9,14 +9,18 @@ This project was started as part of Skunkworks 2021.
 
 ## Configuration
 Leafylink requires either a configuration file, `.env`, or serverless environment configuration.  Required configuration variables are as follows.
-* DB_PASSWORD: (string)
-* DB_URL: (string)
-* DB_USER: (string)
-* ENV: (string) [LOCAL / DEV / PROD]
-* APP_URL: (string)
-* PORT
+* `DB_PASSWORD`: (string)
+* `DB_URL`: (string)
+* `DB_USER`: (string)
+* `ENV`: (string) [LOCAL / DEV / PROD]
+* `APP_URL`: (string)
+* `PORT`: (int)
+
+The application uses a single Atlas cluster, and the `ENV` variable specifies the Atlas `db` used by the application.  Within each `db`, the `collection` is a fixed value, `mappings`.
 
 ## Usage
+Leafylink is deployed via Heroku.  Locally, it can be run without arguments, via `go run .`
+
 There are two methods of usage:
 * Application root URL
 * HTTP POST API
