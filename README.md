@@ -5,7 +5,7 @@ Leafylink is a URL shortener written in Golang, utilizing MongoDB Atlas.  It pro
 
 A mapping is defined as a relationship between a `longUrl`, such as https://www.google.com/, and a Leafylink, such as https://leafylink.herokuapp.com/a6b7f8.
 
-Currently, the Leaflink production environment is https://leafylink.herokuapp.com and dev environment is https://leafylink-dev.herokuapp.com
+Currently, the Leaflink production environment is https://leafylink.herokuapp.com and dev environment is https://leafylink-dev.herokuapp.com.
 
 This project was started as part of Skunkworks 2021.
 
