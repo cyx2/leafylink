@@ -31,3 +31,17 @@ The POST API can be reached via `/api/create`, and called with the following syn
     "LongUrl": "https://leafylink.herokuapp.com/"
 }
 ```
+
+## Database
+Leafylink stores mappings in MongoDB Atlas documents in the following format.  In addition to the `key` to `longUrl` relationship (`redirect` in the database), a few more pieces of metadata are stored, such as the `createdate` and `usecount`.  Each time a Leafylink is used, the `usecount` is incremented.
+
+```json
+{
+    "_id":{"$oid":"607860c8eed834a3b952437e"},
+    "createdate":{"$date":{"$numberLong":"1618501832614"}},
+    "key":"a6b7f8",
+    "redirect":"https://leafylink.herokuapp.com/",
+    "leafyurl":"https://leafylink.herokuapp.com/a6b7f8",
+    "usecount":{"$numberInt":"1"}
+}
+```
