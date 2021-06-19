@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -30,14 +31,20 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	longUrl := r.FormValue("longUrl")
+
+	if !strings.Contains(longUrl, "https://") && !strings.Contains(longUrl, "http://") {
+		longUrl = fmt.Sprintf("%s%s", "http://", longUrl)
+	}
+
 	// Mapping key is computed based on the first six characters of the longUrl MD5 hash
-	newMappingKey := urlHash(r.FormValue("longUrl"))
+	newMappingKey := urlHash(longUrl)
 
 	// Mapping data structure is assembled prior to being loaded into Atlas
 	newMapping := Mapping{
 		CreateDate: time.Now(),
 		Key:        newMappingKey,
-		Redirect:   r.FormValue("longUrl"),
+		Redirect:   longUrl,
 		LeafyUrl:   os.Getenv("APP_URL") + "/" + newMappingKey,
 		UseCount:   0,
 	}
@@ -48,7 +55,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	mappingResponse := Response{
 		Success:  true,
 		LeafyUrl: newMapping.LeafyUrl,
-		LongUrl:  r.FormValue("longUrl"),
+		LongUrl:  longUrl,
 		AppUrl:   os.Getenv("APP_URL"),
 	}
 
