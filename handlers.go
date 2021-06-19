@@ -31,7 +31,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	longUrl := r.FormValue("longUrl")
+	longUrl := strings.ToLower(r.FormValue("longUrl"))
 
 	if !strings.Contains(longUrl, "https://") && !strings.Contains(longUrl, "http://") {
 		longUrl = fmt.Sprintf("%s%s", "http://", longUrl)
