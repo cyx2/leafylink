@@ -1,5 +1,7 @@
 # Leafylink
 
+Oct 2021 Update: the open-source version of this application is being sunsetted and this repo is no-longer maintained.
+
 ## Introduction
 
 Leafylink is a URL shortener written in Golang, utilizing MongoDB Atlas. It provides a basic HTML template-based UI, and a RESTful POST method to insert new mappings.
@@ -14,12 +16,12 @@ This project was started as part of Skunkworks 2021.
 
 Leafylink requires either a configuration file, `.env`, or serverless environment configuration. Required configuration variables are as follows.
 
--   `DB_PASSWORD`: (string)
--   `DB_URL`: (string)
--   `DB_USER`: (string)
--   `ENV`: (string) [LOCAL / DEV / PROD]
--   `APP_URL`: (string)
--   `PORT`: (int)
+- `DB_PASSWORD`: (string)
+- `DB_URL`: (string)
+- `DB_USER`: (string)
+- `ENV`: (string) [LOCAL / DEV / PROD]
+- `APP_URL`: (string)
+- `PORT`: (int)
 
 The application uses a single Atlas cluster, and the `ENV` variable specifies the Atlas `db` used by the application. Within each `db`, the `collection` is a fixed value, `mappings`.
 
@@ -29,14 +31,14 @@ Leafylink is deployed via Heroku. Locally, it can be run without arguments (as l
 
 There are two methods of usage:
 
--   Application root URL
--   HTTP POST API
+- Application root URL
+- HTTP POST API
 
 The POST API can be reached via `/api/create`, and called with the following syntax
 
 ```json
 {
-    "LongUrl": "https://leafylink.herokuapp.com/"
+  "LongUrl": "https://leafylink.herokuapp.com/"
 }
 ```
 
@@ -46,11 +48,11 @@ Leafylink stores mappings in MongoDB Atlas documents in the following format. In
 
 ```json
 {
-    "_id": { "$oid": "607860c8eed834a3b952437e" },
-    "createdate": { "$date": { "$numberLong": "1618501832614" } },
-    "key": "a6b7f8",
-    "redirect": "https://leafylink.herokuapp.com/",
-    "leafyurl": "https://leafylink.herokuapp.com/a6b7f8",
-    "usecount": { "$numberInt": "1" }
+  "_id": { "$oid": "607860c8eed834a3b952437e" },
+  "createdate": { "$date": { "$numberLong": "1618501832614" } },
+  "key": "a6b7f8",
+  "redirect": "https://leafylink.herokuapp.com/",
+  "leafyurl": "https://leafylink.herokuapp.com/a6b7f8",
+  "usecount": { "$numberInt": "1" }
 }
 ```
